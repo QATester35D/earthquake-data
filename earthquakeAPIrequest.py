@@ -2,6 +2,7 @@ import requests
 import json
 import time
 import urllib.request, urllib.parse, urllib.error
+from collections import defaultdict
 
 class GetEarthquakeInfo:
     def __init__(self,startDate, endDate):
@@ -36,18 +37,16 @@ class GetEarthquakeInfo:
 
         reportCount=theJSON["metadata"]["count"] #using this as the row count
         propertyList=["mag", "place", "felt", "tsunami", "sig", "type", "title"] #A list of the properties I want
-        # propListLen=len(propertyList) #7
-        for rowCtr in range (reportCount):
-            for i in theJSON["features"]:
-                propertyListCtr=0
-                row = []
-                for aRow in i["properties"]: #aRow is the actual property name
-                    tempProp=propertyList[propertyListCtr]
-                    tempVal=i["properties"][tempProp]
-                    if aRow == tempProp:
-                        row.append(tempVal)
-                        propertyListCtr+=1
-                earthquakeList.append(row) #appending the entire row of data once to the list
+        for i in theJSON["features"]:
+            propertyListCtr=0
+            row = []
+            for aRow in i["properties"]: #aRow is the actual property name
+                tempProp=propertyList[propertyListCtr]
+                tempVal=i["properties"][tempProp]
+                if aRow == tempProp:
+                    row.append(tempVal)
+                    propertyListCtr+=1
+            earthquakeList.append(row) #appending the entire row of data once to the list
         return earthquakeList
     
     def averageMagnitude(self, data, sizeOfReturnedData):
@@ -65,8 +64,21 @@ class GetEarthquakeInfo:
         return totalTsunamiCount
     
     def countryCount(self, data, sizeOfReturnedData):
-        # countryList
-        totalCnt=0
+        countryList = defaultdict(int) # Initialize dictionary
+        for i in range(sizeOfReturnedData):
+            # placeDescription='90 km SSW of Bengkulu, Indonesia'
+            placeDescription=data[i][1]
+            place=placeDescription.split(",")
+            placeListSize=len(place)
+            name=str(place[placeListSize-1])
+            countryName=name.strip()
+            countryList[countryName] += 1
+        return countryList
+    
+    def countryWithMostEarthquakes(self, countryData):
+        max_val = max(countryData.values())
+        res = list(filter(lambda x: countryData[x] == max_val, countryData))
+        return res[0]
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
 startDate='2024-06-01'
@@ -82,6 +94,8 @@ averageMagnitudeValue=a.averageMagnitude(eqData, sizeOfReturnedData) #Typical Va
 print("The average magnitude",format(averageMagnitudeValue, '.2f'))
 tsunamiCnt=a.anyTsunami(eqData, sizeOfReturnedData)
 print("The number of Tsunami's triggered during this timeframe is:",tsunamiCnt)
-# Maybe parse the countries
+countryList=a.countryCount(eqData, sizeOfReturnedData) # Parse the countries and get a count per country
+maxEarthquakes=a.countryWithMostEarthquakes(countryList)
+print("Country(s) with maximum earthquakes for this timeframe is(are): " + str(maxEarthquakes))
 # Maybe add a graph of the data?
 time.sleep(1)
