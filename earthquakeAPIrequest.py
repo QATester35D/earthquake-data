@@ -63,12 +63,16 @@ class GetEarthquakeInfo:
             if data[i][3] != 0:
                 totalTsunamiCount=totalTsunamiCount+data[i][3]
         return totalTsunamiCount
+    
+    def countryCount(self, data, sizeOfReturnedData):
+        # countryList
+        totalCnt=0
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
 startDate='2024-06-01'
 endDate='2024-06-02'
 a=GetEarthquakeInfo(startDate, endDate)
-eqData=a.getEarthquakeData(a)
+eqData=a.getEarthquakeData(a) #Data brought back: "mag", "place", "felt", "tsunami", "sig", "type", "title"
 try:
     sizeOfReturnedData=len(eqData)
 except:
