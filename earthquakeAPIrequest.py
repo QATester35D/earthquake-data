@@ -75,9 +75,9 @@ class GetEarthquakeInfo:
             countryList[countryName] += 1
         return countryList
     
-    def countryWithMostEarthquakes(self, countryData):
-        max_val = max(countryData.values())
-        res = list(filter(lambda x: countryData[x] == max_val, countryData))
+    def placeWithMostEarthquakes(self, placeData):
+        max_val = max(placeData.values())
+        res = list(filter(lambda x: placeData[x] == max_val, placeData))
         return res[0]
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
@@ -95,7 +95,7 @@ print("The average magnitude",format(averageMagnitudeValue, '.2f'))
 tsunamiCnt=a.anyTsunami(eqData, sizeOfReturnedData)
 print("The number of Tsunami's triggered during this timeframe is:",tsunamiCnt)
 countryList=a.countryCount(eqData, sizeOfReturnedData) # Parse the countries and get a count per country
-maxEarthquakes=a.countryWithMostEarthquakes(countryList)
-print("Country(s) with maximum earthquakes for this timeframe is(are): " + str(maxEarthquakes))
+maxEarthquakes=a.placeWithMostEarthquakes(countryList)
+print("Place(s) with maximum earthquakes for this timeframe is(are): " + str(maxEarthquakes))
 # Maybe add a graph of the data?
 time.sleep(1)
