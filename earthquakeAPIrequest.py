@@ -36,6 +36,7 @@ class GetEarthquakeInfo:
             print(r.content)
 
         reportCount=theJSON["metadata"]["count"] #using this as the row count
+        print("The data count for reports is:",reportCount)
         propertyList=["mag", "place", "felt", "tsunami", "sig", "type", "title"] #A list of the properties I want
         for i in theJSON["features"]:
             propertyListCtr=0
@@ -88,26 +89,21 @@ class GetEarthquakeInfo:
         return totalFeltCount
 
     def significantRange(self, data, sizeOfReturnedData):
-        bottomQtrCnt=int(0)
-        bottomHalfCnt=int(0)
-        topHalfCnt=int(0)
-        topQtrCnt=int(0)
+        global bottomQtrCnt, bottomHalfCnt, topHalfCnt, topQtrCnt
+        bottomQtrCnt = bottomHalfCnt = topHalfCnt = topQtrCnt = 0
         for i in range(sizeOfReturnedData):
             sigValue=float(data[i][4])
-            match sigValue:
-                case range (0 <= 24.9):
-                    bottomQtrCnt=bottomQtrCnt+1
-
-                case range (25 <= 49.9):
-                    bottomHalfCnt=bottomHalfCnt+1
-
-                case range (50 <= 74.9):
-                    topHalfCnt=topHalfCnt+1
-
-                case range (75 <= 100):
-                    topQtrCnt=topQtrCnt+1
-
-        return totalFeltCount
+            if 0 <= sigValue <= 249.9:
+                bottomQtrCnt=bottomQtrCnt+1
+            elif 250 <= sigValue <= 499.9:
+                bottomHalfCnt=bottomHalfCnt+1
+            elif 500 <= sigValue <= 749.9:
+                topHalfCnt=topHalfCnt+1
+            elif 750 <= sigValue <= 1000:
+                topQtrCnt=topQtrCnt+1
+            else:
+                print("something went wrong with sigValue range check. sigValue is:",sigValue)
+        return
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
 startDate='2024-06-01'
@@ -123,7 +119,7 @@ except:
 #layout:
 #"mag",          "place",                 "felt", "tsunami", "sig",  "type",                  "title"
 #[4.6, '90 km SSW of Bengkulu, Indonesia', None,      0,      326, 'earthquake', 'M 4.6 - 90 km SSW of Bengkulu, Indonesia']
-
+#
 # mag
 # Data Type: Decimal      Typical Values: [-1.0, 10.0]      Description: The magnitude for the event.
 averageMagnitudeValue=a.averageMagnitude(eqData, sizeOfReturnedData) 
@@ -141,6 +137,13 @@ tsunamiCnt=a.anyTsunami(eqData, sizeOfReturnedData)
 print("The number of Tsunami's triggered during this timeframe is:",tsunamiCnt)
 # sig
 # Data Type: Integer      Typical Values: [0, 1000]      Description: # A number describing how significant the event is. Larger numbers indicate a more significant event. 
-
+a.significantRange(eqData, sizeOfReturnedData)
+print("sig stats - Typical Values are 0-1000. Description: A number describing how significant the event is.")
+print("Larger numbers indicate a more significant event. This value is determined on a number of factors,")
+print("including: magnitude, maximum MMI, felt reports, and estimated impact.")
+print("Bottom 25% (0-249)",bottomQtrCnt)
+print("Bottom half 25-50% (250-499)",bottomHalfCnt)
+print("Top half 50-75% (500-749)",topHalfCnt)
+print("Top 25% (750-1000)",topQtrCnt)
 # Maybe add a graph of the data?
 time.sleep(1)
