@@ -76,9 +76,38 @@ class GetEarthquakeInfo:
         return countryList
     
     def placeWithMostEarthquakes(self, placeData):
-        max_val = max(placeData.values())
+        max_val = max(placeData.values()) #brings back the max value in the dictionary
         res = list(filter(lambda x: placeData[x] == max_val, placeData))
         return res[0]
+
+    def howManyFelt(self, data, sizeOfReturnedData):
+        totalFeltCount=int(0)
+        for i in range(sizeOfReturnedData):
+            if data[i][2] != None:
+                totalFeltCount=totalFeltCount+1
+        return totalFeltCount
+
+    def significantRange(self, data, sizeOfReturnedData):
+        bottomQtrCnt=int(0)
+        bottomHalfCnt=int(0)
+        topHalfCnt=int(0)
+        topQtrCnt=int(0)
+        for i in range(sizeOfReturnedData):
+            sigValue=float(data[i][4])
+            match sigValue:
+                case range (0 <= 24.9):
+                    bottomQtrCnt=bottomQtrCnt+1
+
+                case range (25 <= 49.9):
+                    bottomHalfCnt=bottomHalfCnt+1
+
+                case range (50 <= 74.9):
+                    topHalfCnt=topHalfCnt+1
+
+                case range (75 <= 100):
+                    topQtrCnt=topQtrCnt+1
+
+        return totalFeltCount
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
 startDate='2024-06-01'
@@ -90,12 +119,28 @@ try:
 except:
     print("The data list is empty.")
     exit
-averageMagnitudeValue=a.averageMagnitude(eqData, sizeOfReturnedData) #Typical Values [-1.0, 10.0]
+#Data returned:
+#layout:
+#"mag",          "place",                 "felt", "tsunami", "sig",  "type",                  "title"
+#[4.6, '90 km SSW of Bengkulu, Indonesia', None,      0,      326, 'earthquake', 'M 4.6 - 90 km SSW of Bengkulu, Indonesia']
+
+# mag
+# Data Type: Decimal      Typical Values: [-1.0, 10.0]      Description: The magnitude for the event.
+averageMagnitudeValue=a.averageMagnitude(eqData, sizeOfReturnedData) 
 print("The average magnitude",format(averageMagnitudeValue, '.2f'))
-tsunamiCnt=a.anyTsunami(eqData, sizeOfReturnedData)
-print("The number of Tsunami's triggered during this timeframe is:",tsunamiCnt)
+# place
 countryList=a.countryCount(eqData, sizeOfReturnedData) # Parse the countries and get a count per country
 maxEarthquakes=a.placeWithMostEarthquakes(countryList)
 print("Place(s) with maximum earthquakes for this timeframe is(are): " + str(maxEarthquakes))
+# felt
+# Data Type: Integer      Typical Values: [44, 843]      Description: The total number of felt reports submitted to the DYFI? system.
+totalFelt=a.howManyFelt(eqData, sizeOfReturnedData)
+print("The total number of earthquakes felt:",totalFelt)
+# tsunami
+tsunamiCnt=a.anyTsunami(eqData, sizeOfReturnedData)
+print("The number of Tsunami's triggered during this timeframe is:",tsunamiCnt)
+# sig
+# Data Type: Integer      Typical Values: [0, 1000]      Description: # A number describing how significant the event is. Larger numbers indicate a more significant event. 
+
 # Maybe add a graph of the data?
 time.sleep(1)
